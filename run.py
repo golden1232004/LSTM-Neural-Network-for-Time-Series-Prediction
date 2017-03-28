@@ -31,15 +31,24 @@ if __name__=='__main__':
                         help='data file .',
                         type=str,
                         default='./sp500.csv')
+    parser.add_argument('--normalise',
+                        help='normalise data',
+                        type=bool,
+                        default=True)
+    parser.add_argument('--epoch',
+                        help='epoch',
+                        type=int,
+                        default=1)
     args = parser.parse_args()
     path = args.data_path
+    isNormalise = args.normalise
 
     global_start_time = time.time()
-    epochs  = 1
+    epochs  = args.epoch
     seq_len= 50
     print('> Loading data... ')
 
-    X_train, y_train, X_test, y_test = lstm.load_data(path, seq_len, True)
+    X_train, y_train, X_test, y_test = lstm.load_data(path, seq_len, isNormalise)
     print('> Data Loaded. Compiling...')
     model = lstm.build_model([1, 50, 100, 1])
     model.fit(
@@ -48,9 +57,10 @@ if __name__=='__main__':
 	    batch_size=512,
 	    nb_epoch=epochs,
 	    validation_split=0.05)
-    predictions = lstm.predict_sequences_multiple(model, X_test, seq_len, 50)
+    #predictions = lstm.predict_sequences_multiple(model, X_test, seq_len, 50)
     #predicted = lstm.predict_sequence_full(model, X_test, seq_len)
-    #predicted = lstm.predict_point_by_point(model, X_test)
+    predictions = lstm.predict_point_by_point(model, X_test)
 
     print('Training duration (s) : ', time.time() - global_start_time)
-    plot_results_multiple(predictions, y_test, 50)
+    #plot_results_multiple(predictions, y_test, 50)
+    plot_results(predictions, y_test)
